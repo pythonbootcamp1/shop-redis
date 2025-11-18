@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-$gg5&d894@&yz2+xq*^vw^*mvrc&kz$y&nr8sj!gk)cv22=sgc'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
 
 
 # Application definition
@@ -75,8 +79,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv('DB_ENGINE'),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -123,3 +131,21 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# 가이드 내용에 따라 프로젝트를 만들어 보겠습니다.
+# 1시부터 1시20분까지 직접 진행해서 간단한 쇼핑몰 동작되도록 하겠습니다.
+# 혹시 안되시는 분은 이후 실습을 위해 공유드린 깃허브 주소를 클론해서 사용하시면 되겠습니다!
+
+
+
+# 1. .env 파일로 주요 정보 분리하기(Debug는 True)
+# 2. Dockerfile 작성하고 가동해서 테스트
+# ---------------1:45까지------------------------
+
+
+# 3. docker-compose.yml 작성하고 가동해서 테스트
+# 4. ec2 인스턴스에 1차 배포하고 동작 확인
+# 5. 로컬에서 .github/workflows/deploy.yml 작성하고 배포 자동화 설정
+# 6. 간단하게 코드 변경 후 반영하는 것 확인
+
+# ec2 인스턴스를 2cpu 4gb 메모리 설정해서 만들기 
