@@ -1,0 +1,36 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}주문 완료 - 라이온 쇼핑몰{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center">
+        <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+        <h1 class="mt-4 mb-3">주문이 완료되었습니다!</h1>
+        <p class="lead">주문번호: <strong>#{{ order.id }}</strong></p>
+        <p class="text-muted">주문 내역은 {{ order.customer_email }}로 발송되었습니다.</p>
+
+        <hr class="my-5">
+
+        <div class="card mx-auto" style="max-width: 600px;">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">주문 정보</h5>
+            </div>
+            <div class="card-body text-start">
+                <p><strong>주문자:</strong> {{ order.customer_name }}</p>
+                <p><strong>이메일:</strong> {{ order.customer_email }}</p>
+                <p><strong>연락처:</strong> {{ order.customer_phone }}</p>
+                <p><strong>주문일시:</strong> {{ order.created_at|date:"Y년 m월 d일 H:i" }}</p>
+                <hr>
+                <p class="mb-0"><strong>총 결제금액:</strong> <span class="text-primary fs-5">{{ order.total_price|floatformat:0 }}원</span></p>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <a href="{% url 'shop:product_list' %}" class="btn btn-primary btn-lg">
+                <i class="bi bi-shop"></i> 쇼핑 계속하기
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
