@@ -4,9 +4,9 @@ from django.views import View
 from django.contrib import messages
 from django.db.models import F
 from django.db import transaction
-
+from django.core.cache import cache
 from .models import Product, Order, OrderItem
-
+import json
 
 class ProductListView(ListView):
     """상품 목록 뷰
@@ -27,28 +27,48 @@ class ProductListView(ListView):
 
 
 class ProductDetailView(DetailView):
-    """상품 상세 뷰
+    """상품 상세 페이지 (Redis 캐싱 적용)"""
 
-    🔴 성능 병목 지점!
-    매번 페이지 로드할 때마다 조회수 UPDATE 쿼리 실행
-    → 가이드 5에서 이 부분이 얼마나 느린지 측정
-    → 가이드 6에서 Redis INCR로 개선
-    """
     model = Product
     template_name = 'shop/product_detail.html'
-    context_object_name = 'product'
 
     def get_object(self):
-        """상품 가져오면서 조회수 증가"""
+        product_id = self.kwargs['pk']
+
+        # 1. 캐시 키 생성
+        cache_key = f"product:{product_id}"
+
+        # 2. 캐시 확인
+        cached_product = cache.get(cache_key)
+
+        if cached_product:
+            # 캐시 히트!
+            print(f"✅ 캐시에서 조회: {cache_key}")
+            return cached_product
+
+        # 3. 캐시 미스 → DB 조회
+        print(f"⚠️ DB 조회: {cache_key}")
         product = super().get_object()
 
-        # 🔴 여기가 문제!
-        # 매번 DB UPDATE 쿼리 실행 → 느림
-        # 100명이 동시에 보면 100번의 UPDATE → 더 느림
-        Product.objects.filter(pk=product.pk).update(views=F('views') + 1)
-        product.refresh_from_db()
+        # 4. 캐시에 저장 (5분)
+        cache.set(cache_key, product, timeout=300)
 
         return product
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        product = self.object
+
+        # 조회수 증가 (Redis 카운터 사용)
+        views_key = f"product:{product.id}:views"
+        # incr을 사용할 때 views_key가 없으면 None을 반환하거나 에러가 날 수 있음. 미리 0으로 초기화 후 증가
+        if cache.get(views_key) is None:
+            cache.set(views_key, 0, timeout=None)
+        views = cache.incr(views_key, delta=1)
+
+        context['views'] = views
+
+        return context
 
 class AddToCartView(View):
     """장바구니 추가

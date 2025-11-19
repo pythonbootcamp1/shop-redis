@@ -107,7 +107,24 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+# Redis 캐시 설정
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/0",  # Docker Compose 사용 시
+        # "LOCATION": "redis://localhost:6379/0",  # Docker Compose 사용 시
+        # 로컬 테스트: "redis://127.0.0.1:6379/0"
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_KWARGS": {
+                "max_connections": 50,  # 최대 연결 수
+                "retry_on_timeout": True,
+            },
+            "SOCKET_CONNECT_TIMEOUT": 5,  # 연결 타임아웃
+            "SOCKET_TIMEOUT": 5,  # 소켓 타임아웃
+        }
+    }
+}
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
